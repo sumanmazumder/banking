@@ -1,0 +1,54 @@
+{
+  "name": "banking-backend",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Banking Management System - API (Node.js, Express, MySQL, JWT)",
+  "main": "dist/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "db:create": "tsx src/utils/create-database.ts",
+    "db:migrate": "tsx src/utils/migrate.ts",
+    "db:seed": "tsx src/utils/seed.ts",
+    "db:setup": "npm run db:create && npm run db:migrate && npm run db:seed",
+    "keys:generate": "tsx src/utils/generate-keys.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "dev:test": "cross-env APP_ENV=test tsx watch src/server.ts",
+    "dev:demo": "cross-env APP_ENV=demo tsx watch src/server.ts",
+    "db:setup:test": "cross-env APP_ENV=test npm run db:setup"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "argon2": "^0.45.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.5",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.12.1",
+    "mysql2": "^3.24.6",
+    "nodemailer": "^10.6.1",
+    "opossum": "^10.0.0",
+    "uuid": "^14.0.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^26.6.6",
+    "@types/nodemailer": "^8.0.2",
+    "@types/opossum": "^8.1.9",
+    "cross-env": "^10.1.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
