@@ -14,7 +14,7 @@ export const passwordRule = z
 export const registerSchema = z.object({
   fullName: z.string().trim().min(2).max(150),
   email,
-  mobile: z.string().trim().regex(/^\+?[0-9]{10,15}$/, 'Invalid mobile number'),
+  mobile: z.string().trim().regex(/^[0-9]{10}$/, 'Mobile number must be 10 digits'),
   password: passwordRule,
   consent: z.literal(true, { error: 'Consent is required' }),
 });
