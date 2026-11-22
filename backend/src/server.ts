@@ -8,8 +8,11 @@ import config, { ROOT } from './config';
 import { pool } from './db';
 import routes from './routes';
 import { attachRequestMeta } from './middleware/security';
+import { responseEnvelope } from './middleware/envelope';
 import { errorHandler, notFound } from './middleware/error';
 import { cleanupExpired } from './services/session.service';
+import { webhookHandler } from './routes/webhook.routes';
+import { startSchedulers } from './jobs/daily';
 
 const app = express();
 app.set('trust proxy', config.isProd ? 1 : false);
@@ -25,10 +28,12 @@ app.use(
   })
 );
 app.use(morgan(config.isProd ? 'combined' : 'dev'));
-// NOTE: payment webhooks (Phase 2) need the RAW body for signature verification - mount them BEFORE express.json().
+// Payment webhooks need the RAW body for signature verification - mounted BEFORE express.json().
+app.post('/api/payments/webhook', ...webhookHandler);
 app.use(express.json({ limit: '100kb' }));
 app.use(cookieParser(config.COOKIE_SECRET));
 app.use(attachRequestMeta);
+app.use(responseEnvelope); // uniform { status, data, message } for every successful response
 
 // public/ = non-sensitive static files. uploads/ (KYC documents) is deliberately NOT served statically.
 app.use('/public', express.static(path.join(ROOT, 'public')));
@@ -42,7 +47,9 @@ const server = app.listen(config.PORT, () =>
 );
 setInterval(() => cleanupExpired().catch((e) => console.error('cleanup failed', e.message)), 60 * 60 * 1000).unref();
 
-const shutdown = () => server.close(() => pool.end().then(() => process.exit(0)));
+startSchedulers();
+
+const shutdown =() => server.close(() => pool.end().then(() => process.exit(0)));
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 

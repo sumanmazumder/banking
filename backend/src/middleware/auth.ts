@@ -36,3 +36,9 @@ export const requireRole = (...roles: string[]) => (req: Request, _res: Response
 };
 
 export const STAFF_ROLES = ['super_admin', 'admin', 'finance_officer', 'auditor'];
+
+// FR-CUS-06 / FR-CUS-09: money movement and loans are blocked until the account is approved and active.
+export const requireActive = (req: Request, _res: Response, next: NextFunction) => {
+  if (req.auth!.status !== 'active') throw new ApiError(403, 'Your account must be active to use this feature', 'ACCOUNT_NOT_ACTIVE');
+  next();
+};

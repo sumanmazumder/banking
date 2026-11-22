@@ -15,3 +15,13 @@ export const sendSecurityEmail = (to: string, name: string, message: string) =>
     subject: `${config.APP_NAME}: security notice`,
     text: `Hello ${name},\n\n${message}\n\nIf this wasn't you, reset your password immediately.`,
   });
+
+export const sendPlainEmail = (to: string, subject: string, text: string) =>
+  sendViaBreaker({ to, subject: `${config.APP_NAME}: ${subject}`, text });
+
+export const sendPasswordResetEmail = (to: string, name: string, code: string) =>
+  sendViaBreaker({
+    to,
+    subject: `${config.APP_NAME}: password reset code`,
+    text: `Hello ${name},\n\nYour password reset code is ${code}. It expires in 10 minutes.\nIf you did not request this, ignore this email - your password has not changed.`,
+  });

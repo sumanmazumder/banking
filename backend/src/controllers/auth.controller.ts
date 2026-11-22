@@ -64,6 +64,16 @@ export const logoutAll = async (req: Request, res: Response) => {
   res.json({ message: 'Logged out from all devices', revoked });
 };
 
+export const forgotPassword = async (req: Request, res: Response) => {
+  await authService.forgotPassword(req.body.email);
+  res.json({ message: 'If the account exists, a reset code has been sent to its email address.' });
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  await authService.resetPassword(req.body.email, req.body.code, req.body.newPassword, reqCtx(req));
+  res.json({ message: 'Password reset. Please sign in with your new password.' });
+};
+
 export const changePassword = async (req: Request, res: Response) => {
   const { userId, sid } = req.auth!;
   const { revoked } = await authService.changePassword(

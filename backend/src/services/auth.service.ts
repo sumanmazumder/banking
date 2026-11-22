@@ -5,7 +5,7 @@ import { OtpModel } from '../models/otp.model';
 import { hmac, safeEqualHex, otpCode } from '../utils/crypto';
 import { ApiError, type ReqCtx } from '../utils/http';
 import { createSession, revokeAllSessions } from './session.service';
-import { sendOtpEmail, sendSecurityEmail } from './email.service';
+import { sendOtpEmail, sendPasswordResetEmail, sendSecurityEmail } from './email.service';
 import { audit } from './audit.service';
 
 const OTP_TTL_MIN = 10;
@@ -63,6 +63,33 @@ export async function verifyOtp(email: string, code: string, ctx: ReqCtx) {
 export async function resendOtp(email: string) {
   const user = await UserModel.findByEmail(email);
   if (user && !user.email_verified_at) await issueEmailOtp(user);
+}
+
+// FR-ADM-02 / FR-CUS-04: password reset by emailed code. Same response whether or not the email exists.
+export async function forgotPassword(email: string) {
+  const user = await UserModel.findByEmail(email);
+  if (!user || !user.email_verified_at || user.status === 'closed') return;
+  const code = otpCode();
+  await OtpModel.invalidateOpenEmailOtps(user.id, 'password_reset');
+  await OtpModel.createEmailOtp(user.id, hmac(`${user.id}:reset:${code}`), OTP_TTL_MIN, 'password_reset');
+  await sendPasswordResetEmail(user.email, user.full_name, code);
+}
+
+export async function resetPassword(email: string, code: string, newPassword: string, ctx: ReqCtx) {
+  const bad = new ApiError(400, 'Invalid or expired code', 'INVALID_OTP');
+  const user = await UserModel.findByEmail(email);
+  if (!user) throw bad;
+  const otp = await OtpModel.latestOpenEmailOtp(user.id, 'password_reset');
+  if (!otp || new Date(otp.expires_at) <= new Date() || otp.attempts >= MAX_OTP_ATTEMPTS) throw bad;
+  if (!safeEqualHex(hmac(`${user.id}:reset:${code}`), otp.code_hash)) {
+    await OtpModel.incrementAttempts(otp.id);
+    throw bad;
+  }
+  await OtpModel.consume(otp.id);
+  await UserModel.updatePassword(user.id, await argon2.hash(newPassword, { type: argon2.argon2id }));
+  const revoked = await revokeAllSessions(user.id, 'password_reset'); // a reset signs out every device
+  await audit(ctx, { action: 'auth.password_reset', entity: 'user', entityId: user.id, after: { sessionsRevoked: revoked }, actor: { userId: user.id, role: user.role } });
+  void sendSecurityEmail(user.email, user.full_name, 'Your password was reset and all devices were signed out.');
 }
 
 // Change password for a signed-in user (customers and staff). Other devices are signed out;
