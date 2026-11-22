@@ -17,8 +17,8 @@ const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().default(5000),
   APP_NAME: z.string().default('Banking Management System'),
-  FRONTEND_URL: z.string().default('http://localhost:3000'),
-  CORS_ORIGINS: z.string().default('http://localhost:3000'),
+  FRONTEND_URL: z.string().default('http://localhost:3003'),
+  CORS_ORIGINS: z.string().default('http://localhost:3003'),
 
   DB_HOST: z.string().default('127.0.0.1'),
   DB_PORT: z.coerce.number().default(3306),

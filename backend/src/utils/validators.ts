@@ -21,4 +21,8 @@ export const registerSchema = z.object({
 export const verifyOtpSchema = z.object({ email, code: z.string().regex(/^\d{6}$/, 'Code must be 6 digits') });
 export const emailOnlySchema = z.object({ email });
 export const loginSchema = z.object({ email, password: z.string().min(1).max(128) });
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required').max(128),
+  newPassword: passwordRule,
+});
 export const reasonSchema = z.object({ reason: z.string().trim().min(5, 'Reason must be at least 5 characters').max(500) });

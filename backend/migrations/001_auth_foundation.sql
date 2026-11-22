@@ -103,3 +103,6 @@ CREATE TABLE audit_logs (
   KEY idx_audit_entity (entity, entity_id),
   KEY idx_audit_action (action, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+admin@example.com
+Smn@12345678

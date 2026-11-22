@@ -40,6 +40,9 @@ export const UserModel = {
       [id]
     ),
 
+  updatePassword: (id: number, passwordHash: string) =>
+    execute('UPDATE users SET password_hash = ?, failed_login_count = 0, locked_until = NULL WHERE id = ?', [passwordHash, id]),
+
   recordFailedLogin: (id: number, failedCount: number, maxFailed: number, lockMinutes: number) =>
     execute(
       'UPDATE users SET failed_login_count = ?, locked_until = IF(? >= ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? MINUTE), NULL) WHERE id = ?',

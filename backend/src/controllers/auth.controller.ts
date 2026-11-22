@@ -64,7 +64,15 @@ export const logoutAll = async (req: Request, res: Response) => {
   res.json({ message: 'Logged out from all devices', revoked });
 };
 
-export const me = async (req: Request, res: Response) => {
+export const changePassword = async (req: Request, res: Response) => {
+  const { userId, sid } = req.auth!;
+  const { revoked } = await authService.changePassword(
+    userId, sid, req.body.currentPassword, req.body.newPassword, reqCtx(req)
+  );
+  res.json({ message: 'Password changed successfully', otherSessionsRevoked: revoked });
+};
+
+export const me =async (req: Request, res: Response) => {
   const u = (await UserModel.findById(req.auth!.userId))!;
   res.json({
     id: u.public_id, email: u.email, mobile: u.mobile, fullName: u.full_name,
